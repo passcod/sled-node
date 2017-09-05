@@ -1,0 +1,18 @@
+{
+  "name": "rsdb-node",
+  "version": "0.12.1",
+  "description": "A modern lock-free atomic embedded database (bindings)",
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/passcod/rsdb-node"
+  },
+  "author": "Félix Saparelli <felix@passcod.name>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "neon-cli": "^0.1.20"
+  },
+  "scripts": {
+    "install": "neon build"
+  }
+}
