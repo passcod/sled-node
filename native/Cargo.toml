@@ -1,16 +1,17 @@
 [package]
+authors = ["Félix Saparelli <felix@passcod.name>"]
+build = "build.rs"
+license = "Apache-2.0"
 name = "rsdb-node"
 version = "0.12.1"
-authors = ["Félix Saparelli <felix@passcod.name>"]
-license = "Apache-2.0"
-build = "build.rs"
-
-[lib]
-name = "rsdb_node"
-crate-type = ["dylib"]
 
 [build-dependencies]
 neon-build = "0.1.20"
 
 [dependencies]
 neon = "0.1.20"
+rsdb = "0.12.1"
+
+[lib]
+crate-type = ["dylib"]
+name = "rsdb_node"

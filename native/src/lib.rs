@@ -1,14 +1,12 @@
 #[macro_use]
 extern crate neon;
+extern crate rsdb;
 
-use neon::vm::{Call, JsResult};
-use neon::js::JsString;
-
-fn hello(call: Call) -> JsResult<JsString> {
-    let scope = call.scope;
-    Ok(JsString::new(scope, "hello node").unwrap())
-}
+mod config;
+mod log;
+mod tree;
 
 register_module!(m, {
-    m.export("hello", hello)
+    m.export("Config", config::new)?;
+    Ok(())
 });
