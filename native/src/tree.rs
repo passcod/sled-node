@@ -1,7 +1,8 @@
 use neon::js::class::Class;
-use neon::js::{JsNull, JsString};
+use neon::js::{JsArray, JsInteger, JsNull, JsString, Object, Value};
 use neon::vm::{Call, JsResult, Lock};
 use rsdb::Tree as RTree;
+use std::ops::DerefMut;
 
 pub struct Tree(pub Option<RTree>);
 
@@ -9,6 +10,33 @@ declare_types! {
     pub class JsTree for Tree {
         init(_) {
             Ok(Tree(None))
+        }
+
+        method get(call) {
+            let scope = call.scope;
+            let args = call.arguments;
+            let key = args.require(scope, 0)?.check::<JsString>()?.value();
+            let bytes = args.this(scope)
+                .grab(|wrap| wrap.0.as_ref()
+                      .and_then(|t| t.get(&key.into_bytes())));
+
+            match bytes {
+                None => Ok(JsNull::new().as_value(scope)),
+                Some(bytes) => {
+                    let mut array = JsArray::new(scope, bytes.len() as u32);
+
+                    {
+                        let mut i = 0u32;
+                        let raw_array = array.deref_mut();
+                        for byte in bytes {
+                            raw_array.set(i, JsInteger::new(scope, byte as i32))?;
+                            i += 1;
+                        }
+                    }
+
+                    Ok(array.upcast())
+                }
+            }
         }
 
         method toString(call) {
