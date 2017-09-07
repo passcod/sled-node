@@ -1,11 +1,11 @@
 use neon::js::class::Class;
 use neon::js::{JsBoolean, JsFunction, JsInteger, JsNull, JsObject, JsString, Object};
 use neon::vm::{Call, JsResult, Lock};
-use rsdb::Config as RConfig;
+use sled::Config as SledConfig;
 use super::log::{self, JsLog};
 use super::tree::{self, JsTree};
 
-pub struct Config(RConfig);
+pub struct Config(SledConfig);
 
 declare_types! {
     pub class JsConfig for Config {
@@ -14,7 +14,7 @@ declare_types! {
             let args = call.arguments;
             let opts = args.require(scope, 0)?.check::<JsObject>()?;
 
-            let mut config = RConfig::default();
+            let mut config = SledConfig::default();
 
             let keys = opts.get_own_property_names(scope)?.to_vec(scope)?;
             for jskey in keys {
@@ -33,8 +33,7 @@ declare_types! {
                         opts.get(scope,k)?.check::<JsInteger>()?.value() as usize
                     ); },
                     k @ "path" => { config.set_path(
-                        opts.get(scope,k)?.downcast::<JsString>()
-                            .and_then(|h| Some(h.value()))
+                        opts.get(scope,k)?.check::<JsString>()?.value()
                     ); },
                     k @ "cacheBits" => { config.set_cache_bits(
                         opts.get(scope,k)?.check::<JsInteger>()?.value() as usize
@@ -111,6 +110,7 @@ declare_types! {
 pub fn new(call: Call) -> JsResult<JsConfig> {
     let mut scope = call.scope;
     let class = JsConfig::class(scope)?;
+    let arg0 = call.arguments.require(scope, 0)?;
     let ctor = class.constructor(scope)?;
-    ctor.construct(scope, vec![JsNull::new()])
+    ctor.construct(scope, vec![arg0])
 }

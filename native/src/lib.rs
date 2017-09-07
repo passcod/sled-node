@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate neon;
-extern crate rsdb;
+extern crate sled;
 
 mod config;
 mod log;

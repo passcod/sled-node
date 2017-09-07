@@ -2,9 +2,9 @@ use neon::js::binary::JsBuffer;
 use neon::js::class::Class;
 use neon::js::{JsNull, JsString, Value};
 use neon::vm::{Call, JsResult, Lock};
-use rsdb::Tree as RTree;
+use sled::Tree as SledTree;
 
-pub struct Tree(pub Option<RTree>);
+pub struct Tree(pub Option<SledTree>);
 
 declare_types! {
     pub class JsTree for Tree {

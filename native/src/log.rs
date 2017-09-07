@@ -1,9 +1,9 @@
 use neon::js::class::Class;
 use neon::js::JsNull;
 use neon::vm::{Call, JsResult};
-use rsdb::LockFreeLog as RLog;
+use sled::LockFreeLog as SledLog;
 
-pub struct Log(pub Option<RLog>);
+pub struct Log(pub Option<SledLog>);
 
 declare_types! {
     pub class JsLog for Log {

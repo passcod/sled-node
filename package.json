@@ -1,11 +1,11 @@
 {
-  "name": "rsdb-node",
-  "version": "0.12.1",
-  "description": "A modern lock-free atomic embedded database (bindings)",
+  "name": "sled-node",
+  "version": "0.13.0",
+  "description": "A modern lock-free atomic embedded database (bindings for sled)",
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/passcod/rsdb-node"
+    "url": "https://github.com/passcod/sled-node"
   },
   "author": "Félix Saparelli <felix@passcod.name>",
   "license": "Apache-2.0",
