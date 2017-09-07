@@ -1,8 +1,8 @@
+use neon::js::binary::JsBuffer;
 use neon::js::class::Class;
-use neon::js::{JsArray, JsInteger, JsNull, JsString, Object, Value};
+use neon::js::{JsNull, JsString, Value};
 use neon::vm::{Call, JsResult, Lock};
 use rsdb::Tree as RTree;
-use std::ops::DerefMut;
 
 pub struct Tree(pub Option<RTree>);
 
@@ -15,26 +15,18 @@ declare_types! {
         method get(call) {
             let scope = call.scope;
             let args = call.arguments;
-            let key = args.require(scope, 0)?.check::<JsString>()?.value();
-            let bytes = args.this(scope)
-                .grab(|wrap| wrap.0.as_ref()
-                      .and_then(|t| t.get(&key.into_bytes())));
+            let mut keybuf = args.require(scope, 0)?.check::<JsBuffer>()?;
+            let key = keybuf.grab(|b| b.as_slice());
+            let bytes = args.this(scope).grab(|wrap| {
+                wrap.0.as_ref().and_then(|t| t.get(key))
+            });
 
             match bytes {
                 None => Ok(JsNull::new().as_value(scope)),
                 Some(bytes) => {
-                    let mut array = JsArray::new(scope, bytes.len() as u32);
-
-                    {
-                        let mut i = 0u32;
-                        let raw_array = array.deref_mut();
-                        for byte in bytes {
-                            raw_array.set(i, JsInteger::new(scope, byte as i32))?;
-                            i += 1;
-                        }
-                    }
-
-                    Ok(array.upcast())
+                    let mut buf = JsBuffer::new(scope, bytes.len() as u32)?;
+                    buf.grab(|mut b| b.as_mut_slice().copy_from_slice(bytes.as_ref()));
+                    Ok(buf.upcast())
                 }
             }
         }
@@ -42,18 +34,14 @@ declare_types! {
         method set(call) {
             let scope = call.scope;
             let args = call.arguments;
-            let key = args.require(scope, 0)?.check::<JsString>()?.value();
-            let ints = args.require(scope, 1)?.check::<JsArray>()?.to_vec(scope)?;
+            let mut keybuf = args.require(scope, 0)?.check::<JsBuffer>()?;
+            let mut valbuf = args.require(scope, 1)?.check::<JsBuffer>()?;
 
-            let key_bytes = key.into_bytes();
-            let bytes: Vec<u8> = ints
-                .into_iter()
-                .flat_map(|i| i.downcast::<JsInteger>())
-                .map(|i| i.value() as u8)
-                .collect();
+            let key: Vec<u8> = keybuf.grab(|b| b.as_slice().into());
+            let val: Vec<u8> = valbuf.grab(|b| b.as_slice().into());
 
             args.this(scope).grab(|wrap| {
-                wrap.0.as_ref().unwrap().set(key_bytes, bytes);
+                wrap.0.as_ref().unwrap().set(key, val);
             });
 
             Ok(JsNull::new().as_value(scope))
